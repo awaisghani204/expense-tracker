@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>personal expense tracker</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f9fafb;
+      color: #111827;
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 40px 16px;
+    }
+
+    .container {
+      max-width: 672px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header h1 {
+      font-size: 1.875rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .header p {
+      color: #6b7280;
+      margin-top: 4px;
+      font-size: 0.875rem;
+    }
+
+    .header {
+      margin-bottom: 32px;
+    }
+
+    /* Summary Cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .summary-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 16px;
+    }
+
+    .summary-card .label {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+
+    .summary-card .value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+
+    .card-padded {
+      padding: 24px;
+    }
+
+    /* Form */
+    .form-title {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #1f2937;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      color: #4b5563;
+      margin-bottom: 4px;
+    }
+
+    .form-input,
+    .form-select {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: #111827;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-input::placeholder {
+      color: #9ca3af;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+      border-color: #a78bfa;
+      box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+    }
+
+    .form-error {
+      color: #ef4444;
+      font-size: 0.75rem;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #9333ea;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .btn-submit:hover {
+      background: #7e22ce;
+    }
+
+    .btn-submit:active {
+      transform: scale(0.97);
+    }
+
+    /* List header */
+    .list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .list-header h2 {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #1f2937;
+    }
+
+    .list-meta {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+
+    /* Expense item */
+    .expense-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 24px;
+      border-bottom: 1px solid #f9fafb;
+      transition: background 0.15s;
+    }
+
+    .expense-item:last-child {
+      border-bottom: none;
+    }
+
+    .expense-item:hover {
+      background: #f9fafb;
+    }
+
+    /* Badge */
+    .badge {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .badge-Food {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .badge-Travel {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .badge-Utilities {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-Entertainment {
+      background: #ede9fe;
+      color: #5b21b6;
+    }
+
+    .badge-Health {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .badge-Other {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .expense-name {
+      flex: 1;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #111827;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .expense-date {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      flex-shrink: 0;
+    }
+
+    .expense-amount {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #111827;
+      min-width: 70px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .btn-delete {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.125rem;
+      line-height: 1;
+      color: #9ca3af;
+      transition: color 0.15s;
+      flex-shrink: 0;
+      padding: 4px;
+    }
+
+    .btn-delete:hover {
+      color: #ef4444;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 56px 24px;
+      color: #9ca3af;
+    }
+
+    .empty-state .emoji {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 0.875rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <h1>Expense Tracker</h1>
+      <p>Log and track your daily spending</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="label">Total spent</div>
+        <div class="value" id="stat-total">Rs0</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Expenses</div>
+        <div class="value" id="stat-count">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Average</div>
+        <div class="value" id="stat-avg">Rs0</div>
+      </div>
+    </div>
+
+    <!-- Add Expense Form -->
+    <div class="card">
+      <div class="card-padded">
+        <h2 class="form-title">Add expense</h2>
+        <form id="expense-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="exp-name">Expense name</label>
+            <input id="exp-name" type="text" class="form-input" placeholder="e.g. Lunch at café" />
+          </div>
+          <div class="form-row form-group">
+            <div>
+              <label class="form-label" for="exp-amount">Amount (Rs.)</label>
+              <input id="exp-amount" type="number" class="form-input" placeholder="0.00" min="0" step="0.01" />
+            </div>
+            <div>
+              <label class="form-label" for="exp-date">Date</label>
+              <input id="exp-date" type="date" class="form-input" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="exp-category">Category</label>
+            <select id="exp-category" class="form-select">
+              <option value="">Select a category</option>
+              <option value="Food">Food</option>
+              <option value="Travel">Travel</option>
+              <option value="Utilities">Utilities</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Health">Health</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <p class="form-error" id="form-error"></p>
+          <button type="submit" class="btn-submit">+ Add expense</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Expense List -->
+    <div class="card" style="margin-bottom: 0;">
+      <div class="list-header">
+        <h2>Expenses</h2>
+        <span class="list-meta" id="list-meta"></span>
+      </div>
+      <div id="expense-list"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── State ──────────────────────────────────────────────
+    var expenses = [
+      { id: 1, name: "Lunch at café", amount: 320, date: "2026-06-20", category: "Food" },
+      { id: 2, name: "Metro card top-up", amount: 200, date: "2026-06-21", category: "Travel" },
+      { id: 3, name: "Netflix subscription", amount: 649, date: "2026-06-22", category: "Entertainment" },
+    ];
+
+    // ── Helpers ────────────────────────────────────────────
+    function formatDate(dateStr) {
+      if (!dateStr) return "";
+      var parts = dateStr.split("-");
+      return parts[2] + "/" + parts[1] + "/" + parts[0];
+    }
+
+    function formatAmount(amount) {
+      return "Rs" + Number(amount).toLocaleString("en-IN");
+    }
+
+    // ── DOM references ────────────────────────────────────
+    var form = document.getElementById("expense-form");
+    var nameInput = document.getElementById("exp-name");
+    var amountInput = document.getElementById("exp-amount");
+    var dateInput = document.getElementById("exp-date");
+    var catInput = document.getElementById("exp-category");
+    var errorEl = document.getElementById("form-error");
+    var listEl = document.getElementById("expense-list");
+    var metaEl = document.getElementById("list-meta");
+    var statTotal = document.getElementById("stat-total");
+    var statCount = document.getElementById("stat-count");
+    var statAvg = document.getElementById("stat-avg");
+
+    // Set default date to today
+    dateInput.value = new Date().toISOString().split("T")[0];
+
+    // ── Render ────────────────────────────────────────────
+    function render() {
+      // Stats
+      var total = 0;
+      for (var i = 0; i < expenses.length; i++) total += expenses[i].amount;
+      var avg = expenses.length ? Math.round(total / expenses.length) : 0;
+
+      statTotal.textContent = formatAmount(total);
+      statCount.textContent = expenses.length;
+      statAvg.textContent = formatAmount(avg);
+
+      // Meta
+      if (expenses.length > 0) {
+        metaEl.textContent = expenses.length + " item" + (expenses.length !== 1 ? "s" : "");
+      } else {
+        metaEl.textContent = "";
+      }
+
+      // List
+      if (expenses.length === 0) {
+        listEl.innerHTML =
+          '<div class="empty-state">' +
+          '<div class="emoji">🧾</div>' +
+          '<p>No expenses yet. Add one above!</p>' +
+          '</div>';
+        return;
+      }
+
+      var html = "";
+      for (var i = 0; i < expenses.length; i++) {
+        var exp = expenses[i];
+        var badgeClass = "badge badge-" + (exp.category || "Other");
+        html +=
+          '<div class="expense-item">' +
+          '<span class="' + badgeClass + '">' + exp.category + '</span>' +
+          '<span class="expense-name">' + exp.name + '</span>' +
+          '<span class="expense-date">' + formatDate(exp.date) + '</span>' +
+          '<span class="expense-amount">' + formatAmount(exp.amount) + '</span>' +
+          '<button class="btn-delete" data-id="' + exp.id + '" title="Delete">×</button>' +
+          '</div>';
+      }
+      listEl.innerHTML = html;
+    }
+
+    // ── Add expense ───────────────────────────────────────
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      var name = nameInput.value.trim();
+      var amount = amountInput.value;
+      var date = dateInput.value;
+      var category = catInput.value;
+
+      if (!name || !amount || !date || !category) {
+        errorEl.textContent = "Please fill in all fields before adding.";
+        errorEl.style.display = "block";
+        return;
+      }
+      if (Number(amount) <= 0) {
+        errorEl.textContent = "Amount must be greater than zero.";
+        errorEl.style.display = "block";
+        return;
+      }
+
+      expenses.unshift({
+        id: Date.now(),
+        name: name,
+        amount: parseFloat(amount),
+        date: date,
+        category: category,
+      });
+
+      // Reset form
+      nameInput.value = "";
+      amountInput.value = "";
+      catInput.value = "";
+      errorEl.style.display = "none";
+
+      render();
+    });
+
+    // ── Delete expense (event delegation) ─────────────────
+    listEl.addEventListener("click", function (e) {
+      if (e.target.classList.contains("btn-delete")) {
+        var id = Number(e.target.getAttribute("data-id"));
+        expenses = expenses.filter(function (exp) { return exp.id !== id; });
+        render();
+      }
+    });
+
+    // ── Initial render ────────────────────────────────────
+    render();
+  </script>
+</body>
+
+</html>
