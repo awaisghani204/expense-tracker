@@ -1,16 +1,25 @@
-# React + Vite
+# Personal Expense Tracker 💰
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple, fast, and responsive web application to track your daily expenses. Built with pure HTML, CSS, and Vanilla JavaScript. 
 
-Currently, two official plugins are available:
+## Features 🚀
+- **Add Expenses:** Log your daily expenses with a name, amount, date, and category.
+- **Categorization:** Organize your spending with color-coded categories (Food, Travel, Utilities, Entertainment, Health, Other).
+- **Dashboard Summary:** View your total spent, total number of expenses, and average expense amount at a glance.
+- **Delete Expenses:** Easily remove any incorrect or old entries.
+- **Responsive Design:** Works beautifully on both desktop and mobile devices.
+- **Standalone:** No build tools or servers required! Just open `index.html` in any browser and it works instantly.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Technologies Used 🛠️
+- **HTML5:** Structure and forms.
+- **CSS3:** Custom styling, CSS Grid, Flexbox, and responsive design (no external frameworks).
+- **Vanilla JavaScript:** DOM manipulation, event handling, and logic.
 
-## React Compiler
+## How to Run 🏃‍♂️
+1. Download or clone this repository.
+2. Double-click the `index.html` file to open it in your default web browser.
+3. Start tracking your expenses!
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Future Improvements 🔮
+- Add LocalStorage support to save expenses even when you refresh the page.
+- Add charts to visualize spending by category.
