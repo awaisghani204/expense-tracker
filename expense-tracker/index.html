@@ -33,7 +33,7 @@
     .header h1 {
       font-size: 1.875rem;
       font-weight: 600;
-      color: #111827;
+      color: #111456;
     }
 
     .header p {
@@ -267,8 +267,8 @@
       flex-shrink: 0;
     }
 
-    .btn-delete {
-      background: none;
+    .btn-delete, .btn-edit {
+      background: transparent;
       border: none;
       cursor: pointer;
       font-size: 1.125rem;
@@ -280,7 +280,11 @@
     }
 
     .btn-delete:hover {
-      color: #ef4444;
+      color: red;
+    }
+
+    .btn-edit:hover {
+      color: #3b82f6;
     }
 
     /* Empty state */
@@ -386,132 +390,206 @@
   </div>
 
   <script>
-    // ── State ──────────────────────────────────────────────
-    var expenses = [
-      { id: 1, name: "Lunch at café", amount: 320, date: "2026-06-20", category: "Food" },
-      { id: 2, name: "Metro card top-up", amount: 200, date: "2026-06-21", category: "Travel" },
-      { id: 3, name: "Netflix subscription", amount: 649, date: "2026-06-22", category: "Entertainment" },
-    ];
+   // ── State ──────────────────────────────────────────────
+var expenses = [];
+var editingId = null;
 
-    // ── Helpers ────────────────────────────────────────────
-    function formatDate(dateStr) {
-      if (!dateStr) return "";
-      var parts = dateStr.split("-");
-      return parts[2] + "/" + parts[1] + "/" + parts[0];
-    }
+// ── Helpers ────────────────────────────────────────────
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  var parts = dateStr.split("-");
+  return parts[2] + "/" + parts[1] + "/" + parts[0];
+}
 
-    function formatAmount(amount) {
-      return "Rs" + Number(amount).toLocaleString("en-IN");
-    }
+function formatAmount(amount) {
+  return "Rs" + Number(amount).toLocaleString("en-IN");
+}
 
-    // ── DOM references ────────────────────────────────────
-    var form = document.getElementById("expense-form");
-    var nameInput = document.getElementById("exp-name");
-    var amountInput = document.getElementById("exp-amount");
-    var dateInput = document.getElementById("exp-date");
-    var catInput = document.getElementById("exp-category");
-    var errorEl = document.getElementById("form-error");
-    var listEl = document.getElementById("expense-list");
-    var metaEl = document.getElementById("list-meta");
-    var statTotal = document.getElementById("stat-total");
-    var statCount = document.getElementById("stat-count");
-    var statAvg = document.getElementById("stat-avg");
+// ── DOM references ────────────────────────────────────
+var form = document.getElementById("expense-form");
+var nameInput = document.getElementById("exp-name");
+var amountInput = document.getElementById("exp-amount");
+var dateInput = document.getElementById("exp-date");
+var catInput = document.getElementById("exp-category");
+var errorEl = document.getElementById("form-error");
+var listEl = document.getElementById("expense-list");
+var metaEl = document.getElementById("list-meta");
+var statTotal = document.getElementById("stat-total");
+var statCount = document.getElementById("stat-count");
+var statAvg = document.getElementById("stat-avg");
 
-    // Set default date to today
-    dateInput.value = new Date().toISOString().split("T")[0];
+// Set default date to today
+dateInput.value = new Date().toISOString().split("T")[0];
 
-    // ── Render ────────────────────────────────────────────
-    function render() {
-      // Stats
-      var total = 0;
-      for (var i = 0; i < expenses.length; i++) total += expenses[i].amount;
-      var avg = expenses.length ? Math.round(total / expenses.length) : 0;
+// ── Render ────────────────────────────────────────────
+function render() {
+  var total = 0;
+  for (var i = 0; i < expenses.length; i++) total += expenses[i].amount;
+  var avg = expenses.length ? Math.round(total / expenses.length) : 0;
 
-      statTotal.textContent = formatAmount(total);
-      statCount.textContent = expenses.length;
-      statAvg.textContent = formatAmount(avg);
+  statTotal.textContent = formatAmount(total);
+  statCount.textContent = expenses.length;
+  statAvg.textContent = formatAmount(avg);
 
-      // Meta
-      if (expenses.length > 0) {
-        metaEl.textContent = expenses.length + " item" + (expenses.length !== 1 ? "s" : "");
-      } else {
-        metaEl.textContent = "";
-      }
+  if (expenses.length > 0) {
+    metaEl.textContent = expenses.length + " item" + (expenses.length !== 1 ? "s" : "");
+  } else {
+    metaEl.textContent = "";
+  }
 
-      // List
-      if (expenses.length === 0) {
-        listEl.innerHTML =
-          '<div class="empty-state">' +
-          '<div class="emoji">🧾</div>' +
-          '<p>No expenses yet. Add one above!</p>' +
-          '</div>';
-        return;
-      }
+  if (expenses.length === 0) {
+    listEl.innerHTML =
+      '<div class="empty-state">' +
+      '<div class="emoji">🧾</div>' +
+      '<p>No expenses yet. Add one above!</p>' +
+      '</div>';
+    return;
+  }
 
-      var html = "";
-      for (var i = 0; i < expenses.length; i++) {
-        var exp = expenses[i];
-        var badgeClass = "badge badge-" + (exp.category || "Other");
-        html +=
-          '<div class="expense-item">' +
-          '<span class="' + badgeClass + '">' + exp.category + '</span>' +
-          '<span class="expense-name">' + exp.name + '</span>' +
-          '<span class="expense-date">' + formatDate(exp.date) + '</span>' +
-          '<span class="expense-amount">' + formatAmount(exp.amount) + '</span>' +
-          '<button class="btn-delete" data-id="' + exp.id + '" title="Delete">×</button>' +
-          '</div>';
-      }
-      listEl.innerHTML = html;
-    }
+  var html = "";
+  for (var i = 0; i < expenses.length; i++) {
+    var exp = expenses[i];
+    var badgeClass = "badge badge-" + (exp.category || "Other");
+    html +=
+      '<div class="expense-item">' +
+      '<span class="' + badgeClass + '">' + exp.category + '</span>' +
+      '<span class="expense-name">' + exp.name + '</span>' +
+      '<span class="expense-date">' + formatDate(exp.date) + '</span>' +
+      '<span class="expense-amount">' + formatAmount(exp.amount) + '</span>' +
+      '<button class="btn-edit" data-id="' + exp.id + '" title="Edit">' +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>' +
+      '</button>' +
+      '<button class="btn-delete" data-id="' + exp.id + '" title="Delete">' +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>' +
+      '</button>' +
+      '</div>';
+  }
+  listEl.innerHTML = html;
+}
 
-    // ── Add expense ───────────────────────────────────────
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-
-      var name = nameInput.value.trim();
-      var amount = amountInput.value;
-      var date = dateInput.value;
-      var category = catInput.value;
-
-      if (!name || !amount || !date || !category) {
-        errorEl.textContent = "Please fill in all fields before adding.";
-        errorEl.style.display = "block";
-        return;
-      }
-      if (Number(amount) <= 0) {
-        errorEl.textContent = "Amount must be greater than zero.";
-        errorEl.style.display = "block";
-        return;
-      }
-
-      expenses.unshift({
-        id: Date.now(),
-        name: name,
-        amount: parseFloat(amount),
-        date: date,
-        category: category,
-      });
-
-      // Reset form
-      nameInput.value = "";
-      amountInput.value = "";
-      catInput.value = "";
-      errorEl.style.display = "none";
-
+// ── FETCH all expenses from backend ──────────────────
+function loadExpenses() {
+  fetch("http://localhost:3000/expenses")
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      expenses = data;
       render();
+    })
+    .catch(function(err) {
+      console.error("Failed to load expenses:", err);
     });
+}
 
-    // ── Delete expense (event delegation) ─────────────────
-    listEl.addEventListener("click", function (e) {
-      if (e.target.classList.contains("btn-delete")) {
-        var id = Number(e.target.getAttribute("data-id"));
-        expenses = expenses.filter(function (exp) { return exp.id !== id; });
-        render();
-      }
-    });
+// ── ADD/EDIT expense — POST/PUT to backend ────────────
+form.addEventListener("submit", function(e) {
+  e.preventDefault();
 
-    // ── Initial render ────────────────────────────────────
+  var name = nameInput.value.trim();
+  var amount = amountInput.value;
+  var date = dateInput.value;
+  var category = catInput.value;
+
+  if (!name || !amount || !date || !category) {
+    errorEl.textContent = "Please fill in all fields before adding.";
+    errorEl.style.display = "block";
+    return;
+  }
+  if (Number(amount) <= 0) {
+    errorEl.textContent = "Amount must be greater than zero.";
+    errorEl.style.display = "block";
+    return;
+  }
+
+  var submitBtn = form.querySelector(".btn-submit");
+
+  if (editingId) {
+    // PUT (Update)
+    fetch("http://localhost:3000/expenses/" + editingId, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name, amount: parseFloat(amount), date: date, category: category }),
+    })
+      .then(function(res) { return res.json(); })
+      .then(function(updatedExpense) {
+        // Find and replace in local array
+        for (var i = 0; i < expenses.length; i++) {
+          if (String(expenses[i].id) === String(editingId)) {
+            expenses[i] = updatedExpense;
+            break;
+          }
+        }
+        editingId = null;
+        submitBtn.textContent = "+ Add expense";
+        resetForm();
+      })
+      .catch(function(err) { console.error("Failed to update expense:", err); });
+  } else {
+    // POST (Create)
+    fetch("http://localhost:3000/expenses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name, amount: parseFloat(amount), date: date, category: category }),
+    })
+      .then(function(res) { return res.json(); })
+      .then(function(newExpense) {
+        expenses.unshift(newExpense);
+        resetForm();
+      })
+      .catch(function(err) { console.error("Failed to add expense:", err); });
+  }
+
+  function resetForm() {
+    nameInput.value = "";
+    amountInput.value = "";
+    catInput.value = "";
+    errorEl.style.display = "none";
     render();
+  }
+});
+
+// ── EDIT / DELETE expense ─────────────────────────────
+listEl.addEventListener("click", function(e) {
+  var editBtn = e.target.closest(".btn-edit");
+  var deleteBtn = e.target.closest(".btn-delete");
+
+  if (editBtn) {
+    var id = editBtn.getAttribute("data-id");
+    var expenseToEdit = null;
+    for (var i = 0; i < expenses.length; i++) {
+      if (String(expenses[i].id) === String(id)) {
+        expenseToEdit = expenses[i];
+        break;
+      }
+    }
+    if (expenseToEdit) {
+      nameInput.value = expenseToEdit.name;
+      amountInput.value = expenseToEdit.amount;
+      dateInput.value = expenseToEdit.date;
+      catInput.value = expenseToEdit.category;
+      editingId = id;
+      form.querySelector(".btn-submit").textContent = "Update expense";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  } else if (deleteBtn) {
+    var id = deleteBtn.getAttribute("data-id");
+
+    fetch("http://localhost:3000/expenses/" + id, {
+      method: "DELETE",
+    })
+      .then(function() {
+        expenses = expenses.filter(function(exp) {
+          return String(exp.id) !== String(id);
+        });
+        render();
+      })
+      .catch(function(err) {
+        console.error("Failed to delete expense:", err);
+      });
+  }
+});
+
+// ── Load expenses on page start ───────────────────────
+loadExpenses();
   </script>
 </body>
 
