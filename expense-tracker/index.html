@@ -30,13 +30,6 @@
     }
 
     /* Header */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 32px;
-    }
-
     .header h1 {
       font-size: 1.875rem;
       font-weight: 600;
@@ -49,39 +42,8 @@
       font-size: 0.875rem;
     }
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .user-greeting {
-      font-size: 0.8125rem;
-      color: #6b7280;
-    }
-
-    .user-greeting strong {
-      color: #111827;
-    }
-
-    .btn-logout {
-      padding: 7px 14px;
-      border-radius: 8px;
-      border: 1px solid #e5e7eb;
-      background: #fff;
-      color: #6b7280;
-      font-family: inherit;
-      font-size: 0.8125rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-    }
-
-    .btn-logout:hover {
-      background: #fef2f2;
-      border-color: #fca5a5;
-      color: #ef4444;
+    .header {
+      margin-bottom: 32px;
     }
 
     /* Summary Cards */
@@ -445,14 +407,8 @@
 
     <!-- Header -->
     <div class="header">
-      <div>
-        <h1>Expense Tracker</h1>
-        <p>Log and track your daily spending</p>
-      </div>
-      <div class="header-right">
-        <span class="user-greeting">Hi, <strong id="user-name">User</strong></span>
-        <button class="btn-logout" id="btn-logout">Logout</button>
-      </div>
+      <h1>Expense Tracker</h1>
+      <p>Log and track your daily spending</p>
     </div>
 
     <!-- Summary Cards -->
@@ -526,45 +482,9 @@
   </div>
 
   <script>
-// ── Auth check ────────────────────────────────────────
-var token = localStorage.getItem("auth_token");
-if (!token) {
-  window.location.href = "auth.html";
-}
-
-// Show user name
-var authUser = JSON.parse(localStorage.getItem("auth_user") || '{}');
-document.getElementById("user-name").textContent = authUser.name || "User";
-
-// Helper: auth headers for fetch
-function authHeaders(extra) {
-  var h = { "Authorization": "Bearer " + token };
-  if (extra) {
-    for (var key in extra) h[key] = extra[key];
-  }
-  return h;
-}
-
-// Handle 401 (token expired / invalid)
-function handleAuthError(res) {
-  if (res.status === 401) {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("auth_user");
-    window.location.href = "auth.html";
-    return true;
-  }
-  return false;
-}
-
-// ── Logout ────────────────────────────────────────────
-document.getElementById("btn-logout").addEventListener("click", function() {
-  localStorage.removeItem("auth_token");
-  localStorage.removeItem("auth_user");
-  window.location.href = "auth.html";
-});
-
-// ── State ──────────────────────────────────────────────
+   // ── State ──────────────────────────────────────────────
 var expenses = [];
+var editingId = null;
 
 // ── Helpers ────────────────────────────────────────────
 function formatAmount(amount) {
@@ -606,15 +526,9 @@ function showToast(msg) {
 
 // ── FETCH all expenses from backend ──────────────────
 function loadExpenses() {
-  fetch("http://localhost:3000/expenses", {
-    headers: authHeaders()
-  })
-    .then(function(res) {
-      if (handleAuthError(res)) return;
-      return res.json();
-    })
+  fetch("http://localhost:3000/expenses")
+    .then(function(res) { return res.json(); })
     .then(function(data) {
-      if (!data) return;
       expenses = data;
       renderSummary();
     })
@@ -645,15 +559,11 @@ form.addEventListener("submit", function(e) {
 
   fetch("http://localhost:3000/expenses", {
     method: "POST",
-    headers: authHeaders({ "Content-Type": "application/json" }),
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name: name, amount: parseFloat(amount), date: date, category: category }),
   })
-    .then(function(res) {
-      if (handleAuthError(res)) return;
-      return res.json();
-    })
+    .then(function(res) { return res.json(); })
     .then(function(newExpense) {
-      if (!newExpense) return;
       expenses.unshift(newExpense);
       nameInput.value = "";
       amountInput.value = "";
