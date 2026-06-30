@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — Expense Tracker</title>
+  <meta name="description" content="Sign in or create an account to track your personal expenses." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f0a1e;
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 100%, rgba(109, 40, 217, 0.08) 0%, transparent 50%);
+      padding: 24px 16px;
+      color: #e5e7eb;
+      line-height: 1.5;
+    }
+
+    /* ── Floating dots background ───────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, rgba(167, 139, 250, 0.3), transparent),
+        radial-gradient(2px 2px at 40% 70%, rgba(167, 139, 250, 0.2), transparent),
+        radial-gradient(2px 2px at 60% 40%, rgba(167, 139, 250, 0.15), transparent),
+        radial-gradient(2px 2px at 80% 80%, rgba(167, 139, 250, 0.25), transparent),
+        radial-gradient(1px 1px at 15% 90%, rgba(255, 255, 255, 0.1), transparent),
+        radial-gradient(1px 1px at 90% 15%, rgba(255, 255, 255, 0.08), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Branding ───────────────────────────────────── */
+    .brand {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .brand-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #7c3aed, #a78bfa);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 32px rgba(124, 58, 237, 0.3);
+    }
+
+    .brand h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .brand p {
+      color: #9ca3af;
+      font-size: 0.875rem;
+      margin-top: 4px;
+    }
+
+    /* ── Card ───────────────────────────────────────── */
+    .auth-card {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    /* ── Tab Switcher ──────────────────────────────── */
+    .auth-tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: #9ca3af;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .auth-tab.active {
+      background: rgba(124, 58, 237, 0.8);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+    }
+
+    .auth-tab:not(.active):hover {
+      color: #d1d5db;
+    }
+
+    /* ── Form ──────────────────────────────────────── */
+    .auth-form {
+      display: none;
+    }
+
+    .auth-form.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8125rem;
+      color: #a1a1aa;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      padding-left: 44px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .form-input::placeholder {
+      color: #6b7280;
+    }
+
+    .form-input:focus {
+      border-color: rgba(124, 58, 237, 0.6);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6b7280;
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    .input-wrapper:focus-within .input-icon {
+      color: #a78bfa;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 4px;
+      font-size: 1rem;
+      transition: color 0.15s;
+    }
+
+    .toggle-password:hover {
+      color: #a78bfa;
+    }
+
+    /* ── Error ──────────────────────────────────────── */
+    .form-error {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #fca5a5;
+      font-size: 0.8125rem;
+      margin-bottom: 18px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .form-error.show {
+      display: flex;
+    }
+
+    /* ── Submit Button ─────────────────────────────── */
+    .btn-auth {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #7c3aed, #6d28d9);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-auth::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn-auth:hover::before {
+      left: 100%;
+    }
+
+    .btn-auth:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+    }
+
+    .btn-auth:active {
+      transform: translateY(0);
+    }
+
+    .btn-auth:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-auth .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto;
+    }
+
+    .btn-auth.loading .btn-text { display: none; }
+    .btn-auth.loading .spinner { display: inline-block; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Footer ────────────────────────────────────── */
+    .auth-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 0.8125rem;
+      color: #6b7280;
+    }
+
+    .auth-footer a {
+      color: #a78bfa;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .auth-footer a:hover {
+      color: #c4b5fd;
+    }
+
+    /* ── Password strength ─────────────────────────── */
+    .password-strength {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .strength-bar {
+      flex: 1;
+      height: 3px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.1);
+      transition: background 0.3s;
+    }
+
+    .strength-bar.weak { background: #ef4444; }
+    .strength-bar.medium { background: #f59e0b; }
+    .strength-bar.strong { background: #22c55e; }
+
+    .strength-text {
+      font-size: 0.6875rem;
+      margin-top: 4px;
+      color: #6b7280;
+      transition: color 0.3s;
+    }
+
+    /* ── Responsive ─────────────────────────────────── */
+    @media (max-width: 480px) {
+      .auth-card { padding: 24px 20px; }
+      .brand-icon { width: 56px; height: 56px; font-size: 1.5rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="auth-container">
+
+    <!-- Branding -->
+    <div class="brand">
+      <div class="brand-icon">💰</div>
+      <h1>Expense Tracker</h1>
+      <p>Track your spending, stay in control</p>
+    </div>
+
+    <!-- Auth Card -->
+    <div class="auth-card">
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-signin" data-tab="signin">Sign In</button>
+        <button class="auth-tab" id="tab-signup" data-tab="signup">Sign Up</button>
+      </div>
+
+      <!-- Error Message -->
+      <div class="form-error" id="auth-error">
+        <span>⚠️</span>
+        <span id="auth-error-msg"></span>
+      </div>
+
+      <!-- Sign In Form -->
+      <form class="auth-form active" id="form-signin">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email address</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555zM0 4.697v7.104l5.803-3.558L0 4.697zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757zM16 11.801V4.697l-5.803 3.546L16 11.801z"/>
+            </svg>
+            <input id="login-email" type="email" class="form-input" placeholder="you@example.com" autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+            </svg>
+            <input id="login-password" type="password" class="form-input" placeholder="Enter your password" autocomplete="current-password" />
+            <button type="button" class="toggle-password" data-target="login-password" title="Show password">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-auth" id="btn-signin">
+          <span class="btn-text">Sign In</span>
+          <span class="spinner"></span>
+        </button>
+      </form>
+
+      <!-- Sign Up Form -->
+      <form class="auth-form" id="form-signup">
+        <div class="form-group">
+          <label class="form-label" for="signup-name">Full name</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+            </svg>
+            <input id="signup-name" type="text" class="form-input" placeholder="John Doe" autocomplete="name" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-email">Email address</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555zM0 4.697v7.104l5.803-3.558L0 4.697zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757zM16 11.801V4.697l-5.803 3.546L16 11.801z"/>
+            </svg>
+            <input id="signup-email" type="email" class="form-input" placeholder="you@example.com" autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-password">Password</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+            </svg>
+            <input id="signup-password" type="password" class="form-input" placeholder="Minimum 6 characters" autocomplete="new-password" />
+            <button type="button" class="toggle-password" data-target="signup-password" title="Show password">👁️</button>
+          </div>
+          <div class="password-strength" id="password-strength">
+            <div class="strength-bar" id="str-bar-1"></div>
+            <div class="strength-bar" id="str-bar-2"></div>
+            <div class="strength-bar" id="str-bar-3"></div>
+            <div class="strength-bar" id="str-bar-4"></div>
+          </div>
+          <div class="strength-text" id="strength-text"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-confirm">Confirm password</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+            </svg>
+            <input id="signup-confirm" type="password" class="form-input" placeholder="Re-enter your password" autocomplete="new-password" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn-auth" id="btn-signup">
+          <span class="btn-text">Create Account</span>
+          <span class="spinner"></span>
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="auth-footer" id="auth-footer-signin">
+        Don't have an account? <a id="link-to-signup">Sign up</a>
+      </div>
+      <div class="auth-footer" id="auth-footer-signup" style="display:none;">
+        Already have an account? <a id="link-to-signin">Sign in</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+// ── If already logged in, redirect ────────────────────
+var token = localStorage.getItem("auth_token");
+if (token) {
+  // Quick verify
+  fetch("http://localhost:3000/auth/me", {
+    headers: { "Authorization": "Bearer " + token }
+  })
+    .then(function(res) {
+      if (res.ok) window.location.href = "index.html";
+    })
+    .catch(function() {});
+}
+
+// ── DOM refs ──────────────────────────────────────────
+var tabSignin = document.getElementById("tab-signin");
+var tabSignup = document.getElementById("tab-signup");
+var formSignin = document.getElementById("form-signin");
+var formSignup = document.getElementById("form-signup");
+var footerSignin = document.getElementById("auth-footer-signin");
+var footerSignup = document.getElementById("auth-footer-signup");
+var linkToSignup = document.getElementById("link-to-signup");
+var linkToSignin = document.getElementById("link-to-signin");
+var authError = document.getElementById("auth-error");
+var authErrorMsg = document.getElementById("auth-error-msg");
+
+// ── Tab switching ─────────────────────────────────────
+function switchTab(tab) {
+  authError.classList.remove("show");
+
+  if (tab === "signin") {
+    tabSignin.classList.add("active");
+    tabSignup.classList.remove("active");
+    formSignin.classList.add("active");
+    formSignup.classList.remove("active");
+    footerSignin.style.display = "";
+    footerSignup.style.display = "none";
+    document.title = "Sign In — Expense Tracker";
+  } else {
+    tabSignup.classList.add("active");
+    tabSignin.classList.remove("active");
+    formSignup.classList.add("active");
+    formSignin.classList.remove("active");
+    footerSignup.style.display = "";
+    footerSignin.style.display = "none";
+    document.title = "Sign Up — Expense Tracker";
+  }
+}
+
+tabSignin.addEventListener("click", function() { switchTab("signin"); });
+tabSignup.addEventListener("click", function() { switchTab("signup"); });
+linkToSignup.addEventListener("click", function() { switchTab("signup"); });
+linkToSignin.addEventListener("click", function() { switchTab("signin"); });
+
+// ── Show error ────────────────────────────────────────
+function showError(msg) {
+  authErrorMsg.textContent = msg;
+  authError.classList.add("show");
+}
+
+// ── Toggle password visibility ────────────────────────
+document.querySelectorAll(".toggle-password").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var target = document.getElementById(btn.getAttribute("data-target"));
+    if (target.type === "password") {
+      target.type = "text";
+      btn.textContent = "🙈";
+    } else {
+      target.type = "password";
+      btn.textContent = "👁️";
+    }
+  });
+});
+
+// ── Password strength meter ───────────────────────────
+var signupPassword = document.getElementById("signup-password");
+var bars = [
+  document.getElementById("str-bar-1"),
+  document.getElementById("str-bar-2"),
+  document.getElementById("str-bar-3"),
+  document.getElementById("str-bar-4"),
+];
+var strengthText = document.getElementById("strength-text");
+
+signupPassword.addEventListener("input", function() {
+  var val = signupPassword.value;
+  var score = 0;
+  if (val.length >= 6) score++;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+  if (/[0-9]/.test(val) || /[^A-Za-z0-9]/.test(val)) score++;
+
+  var labels = ["", "Weak", "Fair", "Good", "Strong"];
+  var classes = ["", "weak", "medium", "medium", "strong"];
+
+  for (var i = 0; i < 4; i++) {
+    bars[i].className = "strength-bar" + (i < score ? " " + classes[score] : "");
+  }
+  strengthText.textContent = val.length > 0 ? labels[score] : "";
+  strengthText.style.color = score <= 1 ? "#ef4444" : score <= 2 ? "#f59e0b" : "#22c55e";
+});
+
+// ── Sign In ───────────────────────────────────────────
+formSignin.addEventListener("submit", function(e) {
+  e.preventDefault();
+  authError.classList.remove("show");
+
+  var email = document.getElementById("login-email").value.trim();
+  var password = document.getElementById("login-password").value;
+
+  if (!email || !password) {
+    showError("Please fill in all fields.");
+    return;
+  }
+
+  var btn = document.getElementById("btn-signin");
+  btn.classList.add("loading");
+  btn.disabled = true;
+
+  fetch("http://localhost:3000/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: email, password: password }),
+  })
+    .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+    .then(function(result) {
+      btn.classList.remove("loading");
+      btn.disabled = false;
+
+      if (!result.ok) {
+        showError(result.data.error || "Login failed.");
+        return;
+      }
+
+      localStorage.setItem("auth_token", result.data.token);
+      localStorage.setItem("auth_user", JSON.stringify(result.data.user));
+      window.location.href = "index.html";
+    })
+    .catch(function(err) {
+      btn.classList.remove("loading");
+      btn.disabled = false;
+      showError("Network error. Is the server running?");
+    });
+});
+
+// ── Sign Up ───────────────────────────────────────────
+formSignup.addEventListener("submit", function(e) {
+  e.preventDefault();
+  authError.classList.remove("show");
+
+  var name = document.getElementById("signup-name").value.trim();
+  var email = document.getElementById("signup-email").value.trim();
+  var password = document.getElementById("signup-password").value;
+  var confirm = document.getElementById("signup-confirm").value;
+
+  if (!name || !email || !password || !confirm) {
+    showError("Please fill in all fields.");
+    return;
+  }
+
+  if (password.length < 6) {
+    showError("Password must be at least 6 characters.");
+    return;
+  }
+
+  if (password !== confirm) {
+    showError("Passwords do not match.");
+    return;
+  }
+
+  var btn = document.getElementById("btn-signup");
+  btn.classList.add("loading");
+  btn.disabled = true;
+
+  fetch("http://localhost:3000/auth/signup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: name, email: email, password: password }),
+  })
+    .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+    .then(function(result) {
+      btn.classList.remove("loading");
+      btn.disabled = false;
+
+      if (!result.ok) {
+        showError(result.data.error || "Sign up failed.");
+        return;
+      }
+
+      localStorage.setItem("auth_token", result.data.token);
+      localStorage.setItem("auth_user", JSON.stringify(result.data.user));
+      window.location.href = "index.html";
+    })
+    .catch(function(err) {
+      btn.classList.remove("loading");
+      btn.disabled = false;
+      showError("Network error. Is the server running?");
+    });
+});
+  </script>
+</body>
+
+</html>
