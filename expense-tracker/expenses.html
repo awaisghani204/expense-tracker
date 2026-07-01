@@ -7,6 +7,7 @@
   <title>View Expenses — Expense Tracker</title>
   <meta name="description" content="View and filter all your tracked expenses by category." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <style>
     *,
     *::before,
@@ -26,8 +27,21 @@
     }
 
     .container {
-      max-width: 720px;
+      max-width: 1024px;
       margin: 0 auto;
+    }
+
+    /* ── Layout Grid ────────────────────────────────── */
+    .layout-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 24px;
     }
 
     /* ── Header ─────────────────────────────────────── */
@@ -38,26 +52,31 @@
       margin-bottom: 28px;
     }
 
-    .btn-back {
+    .btn-add-expense {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
+      gap: 6px;
+      padding: 9px 18px;
       border-radius: 10px;
-      border: 1px solid #e5e7eb;
-      background: #fff;
-      color: #6b7280;
+      border: none;
+      background: linear-gradient(135deg, #7c3aed, #6d28d9);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 600;
       text-decoration: none;
+      cursor: pointer;
       transition: all 0.2s ease;
-      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
     }
 
-    .btn-back:hover {
-      background: #f3f4f6;
-      color: #111827;
-      border-color: #d1d5db;
-      transform: translateX(-2px);
+    .btn-add-expense:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);
+    }
+
+    .btn-add-expense:active {
+      transform: translateY(0);
     }
 
     .page-header-text h1 {
@@ -533,12 +552,177 @@
     }
 
     /* ── Responsive ─────────────────────────────────── */
+    @media (max-width: 860px) {
+      .layout-grid {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: static;
+      }
+      .dashboard {
+        margin-top: 24px;
+      }
+    }
+
     @media (max-width: 480px) {
       .filter-bar { gap: 8px; padding: 12px 14px; }
       .filter-pill { padding: 6px 12px; font-size: 0.75rem; }
       .expense-item { padding: 12px 16px; gap: 8px; }
       .stats-row { flex-wrap: wrap; }
       .modal .form-row { grid-template-columns: 1fr; }
+    }
+
+    /* ── Dashboard Section ──────────────────────────── */
+    .dashboard {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .dashboard-header h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .month-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .month-selector label {
+      font-size: 0.8125rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .month-select {
+      padding: 7px 12px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      color: #111827;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .month-select:focus {
+      border-color: #a78bfa;
+      box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      max-width: 200px;
+      margin: 0 auto;
+    }
+
+    .chart-center-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .chart-center-label .amount {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.2;
+    }
+
+    .chart-center-label .label {
+      font-size: 0.6875rem;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .category-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cat-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cat-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .cat-info {
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cat-name {
+      font-size: 0.8125rem;
+      color: #4b5563;
+      font-weight: 500;
+    }
+
+    .cat-amount {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .cat-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: #f3f4f6;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 0 8px;
+    }
+
+    .cat-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    .dashboard-empty {
+      text-align: center;
+      padding: 24px;
+      color: #9ca3af;
+      font-size: 0.875rem;
+    }
+
+    .dashboard-empty .emoji {
+      font-size: 2rem;
+      margin-bottom: 8px;
     }
   </style>
 </head>
@@ -548,20 +732,23 @@
 
     <!-- Header -->
     <div class="page-header">
-      <a href="index.html" class="btn-back" title="Back to home">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-          <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-        </svg>
-      </a>
       <div class="page-header-text">
         <h1>Your Expenses</h1>
         <p>Browse, filter, edit or delete your tracked spending</p>
       </div>
       <div class="header-right">
+        <a href="index.html" class="btn-add-expense" title="Add a new expense">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+          </svg>
+          Add Expense
+        </a>
         <span class="user-greeting">Hi, <strong id="user-name">User</strong></span>
         <button class="btn-logout" id="btn-logout">Logout</button>
       </div>
     </div>
+    <div class="layout-grid">
+      <div class="main-content">
 
     <!-- Filter Bar -->
     <div class="filter-bar" id="filter-bar">
@@ -603,8 +790,33 @@
       </div>
       <div id="expense-list"></div>
     </div>
-
   </div>
+
+      <aside class="sidebar">
+        <!-- Monthly Dashboard -->
+        <div class="dashboard" id="dashboard">
+          <div class="dashboard-header">
+            <h2>Monthly Overview</h2>
+            <div class="month-selector">
+              <label for="month-select">Month:</label>
+              <select class="month-select" id="month-select"></select>
+            </div>
+          </div>
+          <div id="dashboard-content">
+            <div class="dashboard-grid">
+              <div class="chart-container">
+                <canvas id="category-chart"></canvas>
+                <div class="chart-center-label">
+                  <div class="amount" id="chart-total">Rs0</div>
+                  <div class="label">Total</div>
+                </div>
+              </div>
+              <div class="category-breakdown" id="category-breakdown"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
 
   <!-- Edit Modal -->
   <div class="modal-overlay" id="edit-modal">
@@ -689,10 +901,23 @@ document.getElementById("btn-logout").addEventListener("click", function() {
 
 // ── State ──────────────────────────────────────────────
 var allExpenses = [];   // master list from server
+var monthExpenses = []; // filtered by month
 var expenses = [];      // filtered list for rendering
 var activeCategory = "All";
 var searchQuery = "";
 var editingId = null;
+var activeMonth = ""; // e.g. "2026-07"
+var chartInstance = null;
+
+// Category colors
+var CATEGORY_COLORS = {
+  Food:          "#7c3aed",
+  Travel:        "#3b82f6",
+  Utilities:     "#f59e0b",
+  Entertainment: "#ec4899",
+  Health:        "#10b981",
+  Other:         "#6b7280",
+};
 
 // ── DOM refs ──────────────────────────────────────────
 var listEl = document.getElementById("expense-list");
@@ -711,6 +936,10 @@ var editDate = document.getElementById("edit-date");
 var editCategory = document.getElementById("edit-category");
 var btnCancel = document.getElementById("btn-cancel-edit");
 var toastEl = document.getElementById("toast");
+var monthSelect = document.getElementById("month-select");
+var chartTotal = document.getElementById("chart-total");
+var breakdownEl = document.getElementById("category-breakdown");
+var dashboardContent = document.getElementById("dashboard-content");
 
 // ── Helpers ───────────────────────────────────────────
 function formatDate(dateStr) {
@@ -750,16 +979,27 @@ function highlightMatch(name, query) {
 
 // ── Filter logic (client-side) ────────────────────────
 function applyFilters() {
-  var filtered = allExpenses;
+  // Step 1: filter by month
+  if (activeMonth) {
+    monthExpenses = allExpenses.filter(function(exp) {
+      return exp.date && exp.date.substring(0, 7) === activeMonth;
+    });
+  } else {
+    monthExpenses = allExpenses.slice();
+  }
 
-  // Filter by category
+  // Update dashboard with month-filtered data
+  renderDashboard();
+
+  // Step 2: further filter by category and search
+  var filtered = monthExpenses;
+
   if (activeCategory !== "All") {
     filtered = filtered.filter(function(exp) {
       return exp.category === activeCategory;
     });
   }
 
-  // Filter by search query
   if (searchQuery) {
     var q = searchQuery.toLowerCase();
     filtered = filtered.filter(function(exp) {
@@ -770,6 +1010,158 @@ function applyFilters() {
   expenses = filtered;
   render();
 }
+
+// ── Month helpers ─────────────────────────────────────
+function getCurrentMonth() {
+  var d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+}
+
+function formatMonthLabel(ym) {
+  var parts = ym.split("-");
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return months[parseInt(parts[1], 10) - 1] + " " + parts[0];
+}
+
+function populateMonthSelector() {
+  var months = {};
+  for (var i = 0; i < allExpenses.length; i++) {
+    if (allExpenses[i].date) {
+      var ym = allExpenses[i].date.substring(0, 7);
+      months[ym] = true;
+    }
+  }
+  // Always include current month
+  var current = getCurrentMonth();
+  months[current] = true;
+
+  var sorted = Object.keys(months).sort().reverse();
+  monthSelect.innerHTML = "";
+  for (var j = 0; j < sorted.length; j++) {
+    var opt = document.createElement("option");
+    opt.value = sorted[j];
+    opt.textContent = formatMonthLabel(sorted[j]);
+    monthSelect.appendChild(opt);
+  }
+
+  // Set active month
+  if (!activeMonth || sorted.indexOf(activeMonth) === -1) {
+    activeMonth = current;
+  }
+  monthSelect.value = activeMonth;
+}
+
+// ── Dashboard rendering ──────────────────────────────
+function renderDashboard() {
+  // Calculate category totals from monthExpenses
+  var catTotals = {};
+  var grandTotal = 0;
+  for (var i = 0; i < monthExpenses.length; i++) {
+    var cat = monthExpenses[i].category || "Other";
+    catTotals[cat] = (catTotals[cat] || 0) + monthExpenses[i].amount;
+    grandTotal += monthExpenses[i].amount;
+  }
+
+  chartTotal.textContent = formatAmount(grandTotal);
+
+  // Get sorted category entries
+  var entries = [];
+  for (var c in catTotals) {
+    entries.push({ name: c, amount: catTotals[c] });
+  }
+  entries.sort(function(a, b) { return b.amount - a.amount; });
+
+  if (entries.length === 0) {
+    dashboardContent.innerHTML =
+      '<div class="dashboard-empty"><div class="emoji">📊</div><p>No expenses this month</p></div>';
+    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    return;
+  }
+
+  // Restore grid if needed
+  if (!document.getElementById("category-chart")) {
+    dashboardContent.innerHTML =
+      '<div class="dashboard-grid">' +
+      '<div class="chart-container">' +
+      '<canvas id="category-chart"></canvas>' +
+      '<div class="chart-center-label">' +
+      '<div class="amount" id="chart-total">' + formatAmount(grandTotal) + '</div>' +
+      '<div class="label">Total</div>' +
+      '</div></div>' +
+      '<div class="category-breakdown" id="category-breakdown"></div></div>';
+    chartTotal = document.getElementById("chart-total");
+    breakdownEl = document.getElementById("category-breakdown");
+    chartTotal.textContent = formatAmount(grandTotal);
+  }
+
+  // Build category breakdown HTML
+  var catHtml = "";
+  var emojis = { Food:"🍔", Travel:"✈️", Utilities:"⚡", Entertainment:"🎬", Health:"❤️", Other:"📦" };
+  for (var k = 0; k < entries.length; k++) {
+    var e = entries[k];
+    var color = CATEGORY_COLORS[e.name] || "#6b7280";
+    var pct = grandTotal > 0 ? Math.round((e.amount / grandTotal) * 100) : 0;
+    var emoji = emojis[e.name] || "📦";
+    catHtml +=
+      '<div class="cat-row">' +
+      '<span class="cat-dot" style="background:' + color + '"></span>' +
+      '<span class="cat-name">' + emoji + ' ' + e.name + '</span>' +
+      '<div class="cat-bar-bg"><div class="cat-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div>' +
+      '<span class="cat-amount">' + formatAmount(e.amount) + '</span>' +
+      '</div>';
+  }
+  breakdownEl.innerHTML = catHtml;
+
+  // Render / update chart
+  var labels = entries.map(function(e) { return e.name; });
+  var data = entries.map(function(e) { return e.amount; });
+  var colors = entries.map(function(e) { return CATEGORY_COLORS[e.name] || "#6b7280"; });
+
+  var canvas = document.getElementById("category-chart");
+  if (!canvas) return;
+  var ctx = canvas.getContext("2d");
+
+  if (chartInstance) {
+    chartInstance.data.labels = labels;
+    chartInstance.data.datasets[0].data = data;
+    chartInstance.data.datasets[0].backgroundColor = colors;
+    chartInstance.update();
+  } else {
+    chartInstance = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: colors,
+          borderWidth: 0,
+          hoverOffset: 6,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: "65%",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.label + ": Rs" + Number(context.raw).toLocaleString("en-IN");
+              }
+            }
+          }
+        },
+      },
+    });
+  }
+}
+
+// ── Month selector change ─────────────────────────────
+monthSelect.addEventListener("change", function() {
+  activeMonth = monthSelect.value;
+  applyFilters();
+});
 
 // ── Render ────────────────────────────────────────────
 function render() {
@@ -847,6 +1239,7 @@ function loadExpenses() {
     .then(function(data) {
       if (!data) return;
       allExpenses = data;
+      populateMonthSelector();
       applyFilters();
     })
     .catch(function(err) {
