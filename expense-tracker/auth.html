@@ -22,30 +22,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #0f0a1e;
-      background-image:
-        radial-gradient(ellipse at 20% 50%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 100%, rgba(109, 40, 217, 0.08) 0%, transparent 50%);
+      background: #f9fafb;
       padding: 24px 16px;
-      color: #e5e7eb;
+      color: #111827;
       line-height: 1.5;
-    }
-
-    /* ── Floating dots background ───────────────────── */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-image:
-        radial-gradient(2px 2px at 20% 30%, rgba(167, 139, 250, 0.3), transparent),
-        radial-gradient(2px 2px at 40% 70%, rgba(167, 139, 250, 0.2), transparent),
-        radial-gradient(2px 2px at 60% 40%, rgba(167, 139, 250, 0.15), transparent),
-        radial-gradient(2px 2px at 80% 80%, rgba(167, 139, 250, 0.25), transparent),
-        radial-gradient(1px 1px at 15% 90%, rgba(255, 255, 255, 0.1), transparent),
-        radial-gradient(1px 1px at 90% 15%, rgba(255, 255, 255, 0.08), transparent);
-      pointer-events: none;
-      z-index: 0;
     }
 
     .auth-container {
@@ -77,30 +57,29 @@
     .brand h1 {
       font-size: 1.5rem;
       font-weight: 700;
-      color: #fff;
+      color: #111827;
       letter-spacing: -0.01em;
     }
 
     .brand p {
-      color: #9ca3af;
+      color: #6b7280;
       font-size: 0.875rem;
       margin-top: 4px;
     }
 
     /* ── Card ───────────────────────────────────────── */
     .auth-card {
-      background: rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #fff;
+      border: 1px solid #e5e7eb;
       border-radius: 20px;
       padding: 32px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
     }
 
     /* ── Tab Switcher ──────────────────────────────── */
     .auth-tabs {
       display: flex;
-      background: rgba(255, 255, 255, 0.05);
+      background: #f3f4f6;
       border-radius: 12px;
       padding: 4px;
       margin-bottom: 28px;
@@ -112,7 +91,7 @@
       border: none;
       border-radius: 10px;
       background: transparent;
-      color: #9ca3af;
+      color: #6b7280;
       font-family: inherit;
       font-size: 0.875rem;
       font-weight: 500;
@@ -121,13 +100,13 @@
     }
 
     .auth-tab.active {
-      background: rgba(124, 58, 237, 0.8);
+      background: #7c3aed;
       color: #fff;
-      box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
     }
 
     .auth-tab:not(.active):hover {
-      color: #d1d5db;
+      color: #374151;
     }
 
     /* ── Form ──────────────────────────────────────── */
@@ -152,7 +131,7 @@
     .form-label {
       display: block;
       font-size: 0.8125rem;
-      color: #a1a1aa;
+      color: #374151;
       margin-bottom: 6px;
       font-weight: 500;
     }
@@ -165,10 +144,10 @@
       width: 100%;
       padding: 12px 16px;
       padding-left: 44px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      background: #fff;
+      border: 1px solid #d1d5db;
       border-radius: 12px;
-      color: #fff;
+      color: #111827;
       font-family: inherit;
       font-size: 0.875rem;
       outline: none;
@@ -176,13 +155,13 @@
     }
 
     .form-input::placeholder {
-      color: #6b7280;
+      color: #9ca3af;
     }
 
     .form-input:focus {
-      border-color: rgba(124, 58, 237, 0.6);
+      border-color: #7c3aed;
       box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
-      background: rgba(255, 255, 255, 0.08);
+      background: #fff;
     }
 
     .input-icon {
@@ -190,13 +169,13 @@
       left: 14px;
       top: 50%;
       transform: translateY(-50%);
-      color: #6b7280;
+      color: #9ca3af;
       pointer-events: none;
       transition: color 0.2s;
     }
 
     .input-wrapper:focus-within .input-icon {
-      color: #a78bfa;
+      color: #7c3aed;
     }
 
     .toggle-password {
@@ -206,7 +185,7 @@
       transform: translateY(-50%);
       background: none;
       border: none;
-      color: #6b7280;
+      color: #9ca3af;
       cursor: pointer;
       padding: 4px;
       font-size: 1rem;
@@ -214,7 +193,7 @@
     }
 
     .toggle-password:hover {
-      color: #a78bfa;
+      color: #7c3aed;
     }
 
     /* ── Error ──────────────────────────────────────── */
@@ -663,9 +642,10 @@ formSignup.addEventListener("submit", function(e) {
         return;
       }
 
-      localStorage.setItem("auth_token", result.data.token);
-      localStorage.setItem("auth_user", JSON.stringify(result.data.user));
-      window.location.href = "expenses.html";
+      alert("Account created successfully! Please sign in to continue.");
+      formSignup.reset();
+      switchTab("signin");
+      document.getElementById("login-email").value = email;
     })
     .catch(function(err) {
       btn.classList.remove("loading");

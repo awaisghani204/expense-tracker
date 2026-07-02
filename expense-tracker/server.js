@@ -106,6 +106,32 @@ app.get("/auth/me", authenticateToken, (req, res) => {
   }
   res.json({ user });
 });
+// ═══════════════════════════════════════════════════════
+// ── BUDGET ROUTES (Protected) ─────────────────────────
+// ═══════════════════════════════════════════════════════
+
+// ── GET /budget ───────────────────────────────────────
+app.get("/budget", authenticateToken, (req, res) => {
+  const user = db.prepare("SELECT monthly_budget FROM users WHERE id = ?").get(req.userId);
+  if (!user) {
+    return res.status(404).json({ error: "User not found." });
+  }
+  res.json({ monthly_budget: user.monthly_budget || 0 });
+});
+
+// ── PUT /budget ───────────────────────────────────────
+app.put("/budget", authenticateToken, (req, res) => {
+  const { amount } = req.body;
+
+  if (amount === undefined || amount === null || isNaN(amount) || amount < 0) {
+    return res.status(400).json({ error: "A valid positive budget amount is required." });
+  }
+
+  db.prepare("UPDATE users SET monthly_budget = ? WHERE id = ?").run(amount, req.userId);
+  res.json({ monthly_budget: amount });
+});
+
+
 
 // ═══════════════════════════════════════════════════════
 // ── EXPENSE ROUTES (Protected) ───────────────────────

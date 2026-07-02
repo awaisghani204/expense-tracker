@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>personal expense tracker</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+
   <style>
     *,
     *::before,
@@ -23,6 +23,17 @@
       min-height: 100vh;
       padding: 40px 16px;
     }
+    /* Entrance Animation */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .container {
+      max-width: 672px;
+      margin: 0 auto;
+      animation: fadeUp 0.6s ease-out forwards;
+    }
 
     .container {
       max-width: 672px;
@@ -31,25 +42,19 @@
 
     /* Header */
     .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #f9fafb;
+      padding: 16px 0;
+      margin-top: -16px;
+      margin-bottom: 24px;
       display: flex;
       align-items: center;
       gap: 16px;
-      margin-bottom: 32px;
-    }
-
-    /* Sticky Arrow Button */
-    .sticky-arrow-container {
-      position: sticky;
-      top: 24px;
-      z-index: 100;
-      width: 0;
-      height: 0; /* Doesn't push the header down */
     }
 
     .btn-back {
-      position: absolute;
-      top: 0;
-      left: -56px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -217,24 +222,27 @@
 
     .btn-submit {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: none;
       border-radius: 8px;
-      background: #9333ea;
+      background: linear-gradient(135deg, #9333ea, #4f46e5);
       color: #fff;
       font-family: inherit;
-      font-size: 0.875rem;
-      font-weight: 500;
+      font-size: 0.95rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.15s, transform 0.15s;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
     }
 
     .btn-submit:hover {
-      background: #7e22ce;
+      background: linear-gradient(135deg, #7e22ce, #4338ca);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
     }
 
     .btn-submit:active {
-      transform: scale(0.97);
+      transform: translateY(0);
     }
 
     /* List header */
@@ -379,9 +387,9 @@
     /* Toast */
     .toast {
       position: fixed;
-      bottom: 32px;
+      top: 32px;
       left: 50%;
-      transform: translateX(-50%) translateY(100px);
+      transform: translateX(-50%) translateY(-100px);
       background: #1f2937;
       color: #fff;
       padding: 14px 24px;
@@ -396,6 +404,8 @@
       transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1000;
       pointer-events: none;
+      width: max-content;
+      max-width: 90vw;
     }
 
     .toast.show {
@@ -425,21 +435,18 @@
 
   <div class="container">
 
-    <!-- Sticky Arrow Container -->
-    <div class="sticky-arrow-container">
+    <!-- Header -->
+    <div class="header">
       <a href="expenses.html" class="btn-back" title="Back to expenses">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
           <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
         </svg>
       </a>
-    </div>
-
-    <!-- Header -->
-    <div class="header">
-      <div class="header-text-container">
+      <div class="header-text-container" style="flex: 1;">
         <h1>Add Expense</h1>
         <p>Log a new expense to your tracker</p>
       </div>
+
       <div class="header-right">
         <span class="user-greeting">Hi, <strong id="user-name">User</strong></span>
         <button class="btn-logout" id="btn-logout">Logout</button>
@@ -510,10 +517,18 @@
 
   <script>
 // ── Auth check ────────────────────────────────────────
-var token = localStorage.getItem("auth_token");
-if (!token) {
-  window.location.href = "auth.html";
+function checkAuth() {
+  var t = localStorage.getItem("auth_token");
+  if (!t) window.location.replace("auth.html");
+  return t;
 }
+var token = checkAuth();
+
+window.addEventListener("pageshow", function(e) {
+  if (e.persisted || !localStorage.getItem("auth_token")) {
+    checkAuth();
+  }
+});
 
 // Show user name
 var authUser = JSON.parse(localStorage.getItem("auth_user") || '{}');
@@ -541,9 +556,11 @@ function handleAuthError(res) {
 
 // ── Logout ────────────────────────────────────────────
 document.getElementById("btn-logout").addEventListener("click", function() {
-  localStorage.removeItem("auth_token");
-  localStorage.removeItem("auth_user");
-  window.location.href = "auth.html";
+  if (window.confirm("Are you sure you want to logout?")) {
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
+    window.location.href = "auth.html";
+  }
 });
 
 // ── State ──────────────────────────────────────────────
@@ -584,7 +601,9 @@ function renderSummary() {
 function showToast(msg) {
   toastEl.querySelector(".toast-msg").textContent = msg;
   toastEl.classList.add("show");
-  setTimeout(function() { toastEl.classList.remove("show"); }, 2500);
+  // Clear any existing timeout so they don't overlap
+  if (toastEl.hideTimeout) clearTimeout(toastEl.hideTimeout);
+  toastEl.hideTimeout = setTimeout(function() { toastEl.classList.remove("show"); }, 2000);
 }
 
 // ── FETCH all expenses from backend ──────────────────

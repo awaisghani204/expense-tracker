@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>View Expenses — Expense Tracker</title>
   <meta name="description" content="View and filter all your tracked expenses by category." />
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <style>
@@ -26,9 +27,16 @@
       padding: 40px 16px;
     }
 
+    /* Entrance Animation */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .container {
       max-width: 1024px;
       margin: 0 auto;
+      animation: fadeUp 0.6s ease-out forwards;
     }
 
     /* ── Layout Grid ────────────────────────────────── */
@@ -45,14 +53,14 @@
     }
 
     /* ── Header ─────────────────────────────────────── */
-    .page-header {
+    .header {
       display: flex;
       align-items: center;
       gap: 16px;
       margin-bottom: 28px;
     }
 
-    .btn-add-expense {
+    .btn-add {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -70,24 +78,20 @@
       box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
     }
 
-    .btn-add-expense:hover {
+    .btn-add:hover {
       transform: translateY(-1px);
       box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);
     }
 
-    .btn-add-expense:active {
-      transform: translateY(0);
-    }
-
-    .page-header-text h1 {
+    .header-text-container h1 {
       font-size: 1.5rem;
       font-weight: 600;
-      color: #111456;
+      color: darkblue;
     }
 
-    .page-header-text p {
+    .header-text-container p {
       font-size: 0.8125rem;
-      color: #6b7280;
+      color:darkblue;
       margin-top: 2px;
     }
 
@@ -118,7 +122,6 @@
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
-      text-decoration: none;
     }
 
     .btn-logout:hover {
@@ -127,16 +130,23 @@
       color: #ef4444;
     }
 
+    /* Dashboard & Cards */
+    .dashboard,
+    .card,
+    .filter-bar {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
     /* ── Filter Bar ─────────────────────────────────── */
     .filter-bar {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      margin-bottom: 24px;
       padding: 16px 20px;
-      background: #fff;
-      border-radius: 14px;
-      border: 1px solid #e5e7eb;
     }
 
     /* ── Search Input ───────────────────────────────── */
@@ -152,11 +162,6 @@
       transform: translateY(-50%);
       color: #9ca3af;
       pointer-events: none;
-      transition: color 0.2s;
-    }
-
-    .search-wrapper:focus-within .search-icon {
-      color: #7c3aed;
     }
 
     .search-input {
@@ -169,17 +174,6 @@
       color: #111827;
       background: #f9fafb;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-    }
-
-    .search-input::placeholder {
-      color: #9ca3af;
-    }
-
-    .search-input:focus {
-      border-color: #a78bfa;
-      box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-      background: #fff;
     }
 
     .search-clear {
@@ -193,22 +187,11 @@
       border-radius: 50%;
       background: #e5e7eb;
       color: #6b7280;
-      font-size: 0.75rem;
       cursor: pointer;
       display: none;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
     }
 
-    .search-clear:hover {
-      background: #d1d5db;
-      color: #111827;
-    }
-
-    .search-clear.visible {
-      display: flex;
-    }
+    .search-clear.visible { display: flex; align-items: center; justify-content: center; }
 
     .filter-pills {
       display: flex;
@@ -227,20 +210,12 @@
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .filter-pill:hover {
-      border-color: #c4b5fd;
-      color: #7c3aed;
-      background: #f5f3ff;
     }
 
     .filter-pill.active {
       background: #7c3aed;
       color: #fff;
       border-color: #7c3aed;
-      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
     }
 
     /* ── Stats Row ──────────────────────────────────── */
@@ -250,8 +225,8 @@
       margin-bottom: 20px;
     }
 
-    .stat-chip {
-      display: flex;
+    .stats-row .stat-chip {
+      display: inline-flex;
       align-items: center;
       gap: 6px;
       padding: 8px 14px;
@@ -267,20 +242,12 @@
       font-weight: 600;
     }
 
-    /* ── Card ───────────────────────────────────────── */
-    .card {
-      background: #fff;
-      border-radius: 14px;
-      border: 1px solid #e5e7eb;
-      overflow: hidden;
-    }
-
     .list-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 16px 24px;
-      border-bottom: 1px solid #f3f4f6;
+      border-bottom: 1px solid rgba(243, 244, 246, 0.4);
     }
 
     .list-header h2 {
@@ -300,9 +267,9 @@
       align-items: center;
       gap: 12px;
       padding: 14px 24px;
-      border-bottom: 1px solid #f9fafb;
-      transition: background 0.15s;
-      animation: fadeSlideIn 0.3s ease both;
+      border-bottom: 1px solid rgba(243, 244, 246, 0.4);
+      transition: background 0.15s, transform 0.15s;
+      animation: fadeUp 0.4s ease-out forwards;
     }
 
     .expense-item:last-child {
@@ -310,18 +277,8 @@
     }
 
     .expense-item:hover {
-      background: #faf9ff;
-    }
-
-    @keyframes fadeSlideIn {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      background: rgba(255, 255, 255, 0.95);
+      transform: translateX(4px);
     }
 
     /* ── Badge ──────────────────────────────────────── */
@@ -331,7 +288,6 @@
       padding: 4px 10px;
       border-radius: 9999px;
       white-space: nowrap;
-      flex-shrink: 0;
     }
 
     .badge-Food { background: #d1fae5; color: #065f46; }
@@ -388,22 +344,7 @@
       color: #9ca3af;
     }
 
-    .empty-state .emoji {
-      font-size: 3rem;
-      margin-bottom: 12px;
-    }
-
-    .empty-state p {
-      font-size: 0.9375rem;
-    }
-
-    .empty-state .subtext {
-      font-size: 0.8125rem;
-      margin-top: 6px;
-      color: #c4b5fd;
-    }
-
-    /* ── Edit Modal ─────────────────────────────────── */
+    /* ── Modal & Toast ──────────────────────────────── */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -418,10 +359,7 @@
       transition: opacity 0.25s ease;
     }
 
-    .modal-overlay.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
 
     .modal {
       background: #fff;
@@ -430,156 +368,15 @@
       width: 90%;
       max-width: 440px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.18);
-      transform: scale(0.95) translateY(12px);
-      transition: transform 0.25s ease;
     }
 
-    .modal-overlay.open .modal {
-      transform: scale(1) translateY(0);
-    }
 
-    .modal h3 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #111827;
-      margin-bottom: 20px;
-    }
 
-    .modal .form-group {
-      margin-bottom: 14px;
-    }
-
-    .modal .form-label {
-      display: block;
-      font-size: 0.8125rem;
-      color: #4b5563;
-      margin-bottom: 4px;
-    }
-
-    .modal .form-input,
-    .modal .form-select {
-      width: 100%;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 0.875rem;
-      font-family: inherit;
-      color: #111827;
-      background: #fff;
-      outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-
-    .modal .form-input:focus,
-    .modal .form-select:focus {
-      border-color: #a78bfa;
-      box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
-    }
-
-    .modal .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    .btn-modal {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-family: inherit;
-      font-size: 0.875rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.15s;
-    }
-
-    .btn-modal:active { transform: scale(0.97); }
-
-    .btn-modal-cancel {
-      background: #f3f4f6;
-      color: #4b5563;
-    }
-
-    .btn-modal-cancel:hover { background: #e5e7eb; }
-
-    .btn-modal-save {
-      background: #7c3aed;
-      color: #fff;
-    }
-
-    .btn-modal-save:hover { background: #6d28d9; }
-
-    /* ── Toast ──────────────────────────────────────── */
-    .toast {
-      position: fixed;
-      bottom: 32px;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: #1f2937;
-      color: #fff;
-      padding: 14px 24px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      box-shadow: 0 12px 32px rgba(0,0,0,0.18);
-      opacity: 0;
-      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 1000;
-      pointer-events: none;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    /* ── Search highlight ───────────────────────────── */
-    .highlight {
-      background: #fef08a;
-      color: #111827;
-      border-radius: 2px;
-      padding: 0 1px;
-    }
-
-    /* ── Responsive ─────────────────────────────────── */
-    @media (max-width: 860px) {
-      .layout-grid {
-        grid-template-columns: 1fr;
-      }
-      .sidebar {
-        position: static;
-      }
-      .dashboard {
-        margin-top: 24px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .filter-bar { gap: 8px; padding: 12px 14px; }
-      .filter-pill { padding: 6px 12px; font-size: 0.75rem; }
-      .expense-item { padding: 12px 16px; gap: 8px; }
-      .stats-row { flex-wrap: wrap; }
-      .modal .form-row { grid-template-columns: 1fr; }
-    }
+    /* ── Highlight ──────────────────────────────────── */
+    .highlight { background: #fef08a; }
 
     /* ── Dashboard Section ──────────────────────────── */
-    .dashboard {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 24px;
-    }
+    .dashboard { padding: 20px; }
 
     .dashboard-header {
       display: flex;
@@ -588,47 +385,13 @@
       margin-bottom: 20px;
     }
 
-    .dashboard-header h2 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #111827;
-    }
-
-    .month-selector {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .month-selector label {
-      font-size: 0.8125rem;
-      color: #6b7280;
-      font-weight: 500;
-    }
+    .dashboard-header h2 { font-size: 1.125rem; }
 
     .month-select {
       padding: 7px 12px;
       border: 1.5px solid #e5e7eb;
       border-radius: 8px;
-      font-family: inherit;
-      font-size: 0.8125rem;
-      color: #111827;
-      background: #fff;
-      outline: none;
       cursor: pointer;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .month-select:focus {
-      border-color: #a78bfa;
-      box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-    }
-
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 24px;
-      align-items: center;
     }
 
     .chart-container {
@@ -650,20 +413,13 @@
     .chart-center-label .amount {
       font-size: 1.125rem;
       font-weight: 700;
-      color: #111827;
-      line-height: 1.2;
-    }
-
-    .chart-center-label .label {
-      font-size: 0.6875rem;
-      color: #9ca3af;
-      margin-top: 2px;
     }
 
     .category-breakdown {
       display: flex;
       flex-direction: column;
       gap: 10px;
+      margin-top: 20px;
     }
 
     .cat-row {
@@ -676,27 +432,9 @@
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      flex-shrink: 0;
     }
 
-    .cat-info {
-      flex: 1;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .cat-name {
-      font-size: 0.8125rem;
-      color: #4b5563;
-      font-weight: 500;
-    }
-
-    .cat-amount {
-      font-size: 0.8125rem;
-      font-weight: 600;
-      color: #111827;
-    }
+    .cat-name { font-size: 0.8125rem; }
 
     .cat-bar-bg {
       flex: 1;
@@ -704,25 +442,92 @@
       background: #f3f4f6;
       border-radius: 3px;
       overflow: hidden;
-      margin: 0 8px;
     }
 
-    .cat-bar-fill {
-      height: 100%;
-      border-radius: 3px;
-      transition: width 0.4s ease;
+    .cat-bar-fill { height: 100%; border-radius: 3px; }
+
+    /* ── Budget Section ─────────────────────────────── */
+    .section-divider { border: 0; height: 1px; background: #e5e7eb; margin: 20px 0; }
+
+    .budget-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
     }
 
-    .dashboard-empty {
-      text-align: center;
-      padding: 24px;
-      color: #9ca3af;
+    .btn-edit-budget { background: none; border: none; color: #7c3aed; cursor: pointer; }
+
+    .budget-input-group { display: flex; gap: 8px; }
+
+    .budget-input { flex: 1; padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; }
+
+    .btn-save-budget { padding: 8px 16px; background: #7c3aed; color: white; border: none; border-radius: 8px; }
+
+    .budget-progress-bg { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+
+    .budget-progress-fill { height: 100%; background: #10b981; transition: width 0.3s ease; }
+
+    /* ── Toast ──────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      top: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #1f2937;
+      color: #fff;
+      padding: 14px 24px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 0.875rem;
+      font-weight: 500;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
+      pointer-events: none;
+      width: max-content;
+      max-width: 90vw;
     }
 
-    .dashboard-empty .emoji {
-      font-size: 2rem;
-      margin-bottom: 8px;
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Persistent Alert ───────────────────────────── */
+    .persistent-alert {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1100;
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      max-width: 380px;
+    }
+
+    .persistent-alert.hidden { opacity: 0; pointer-events: none; }
+
+    .alert-close {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    /* ── Responsive ─────────────────────────────────── */
+    @media (max-width: 860px) {
+      .layout-grid { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
     }
   </style>
 </head>
@@ -731,14 +536,15 @@
   <div class="container">
 
     <!-- Header -->
-    <div class="page-header">
-      <div class="page-header-text">
-        <h1>Your Expenses</h1>
-        <p>Browse, filter, edit or delete your tracked spending</p>
+    <div class="header">
+      <div class="header-text-container" style="flex: 1;">
+        <h1>Overview</h1>
+        <p>Your expenses dashboard</p>
       </div>
+
       <div class="header-right">
-        <a href="index.html" class="btn-add-expense" title="Add a new expense">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+        <a href="index.html" class="btn-add">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
           </svg>
           Add Expense
@@ -814,6 +620,34 @@
               <div class="category-breakdown" id="category-breakdown"></div>
             </div>
           </div>
+          <!-- Budget Section -->
+          <div class="budget-section" id="budget-section">
+            <hr class="section-divider" />
+            <div class="budget-header">
+              <h3>Monthly Budget</h3>
+              <button class="btn-edit-budget" id="btn-edit-budget" title="Edit Budget">✏️ Edit</button>
+            </div>
+            
+            <!-- Setup State (Input field to set/change budget) -->
+            <div class="budget-setup hidden" id="budget-setup">
+              <div class="budget-input-group">
+                <input type="number" class="budget-input" id="budget-input" placeholder="Set limit (Rs.)" min="0" />
+                <button class="btn-save-budget" id="btn-save-budget">Save</button>
+              </div>
+            </div>
+
+            <!-- View State (Displays progress bar & stats) -->
+            <div class="budget-display" id="budget-display">
+              <div class="budget-info">
+                <span class="budget-spent" id="budget-spent-text">Rs. 0</span>
+                <span class="budget-total" id="budget-total-text">of Rs. 0 spent</span>
+              </div>
+              <div class="budget-progress-bg">
+                <div class="budget-progress-fill" id="budget-progress-fill" style="width: 0%"></div>
+              </div>
+              <p class="budget-status-msg" id="budget-status-msg"></p>
+            </div>
+          </div>
         </div>
       </aside>
     </div>
@@ -855,6 +689,14 @@
       </form>
     </div>
   </div>
+  <!-- Persistent Warning/Alert Popup -->
+  <div class="persistent-alert hidden" id="persistent-alert">
+    <span class="alert-icon" id="persistent-alert-icon">⚠️</span>
+    <span class="alert-msg" id="persistent-alert-msg"></span>
+    <button class="alert-close" id="btn-close-alert">✕</button>
+  </div>
+
+  
 
   <!-- Toast -->
   <div class="toast" id="toast">
@@ -863,10 +705,18 @@
 
   <script>
 // ── Auth check ────────────────────────────────────────
-var token = localStorage.getItem("auth_token");
-if (!token) {
-  window.location.href = "auth.html";
+function checkAuth() {
+  var t = localStorage.getItem("auth_token");
+  if (!t) window.location.replace("auth.html");
+  return t;
 }
+var token = checkAuth();
+
+window.addEventListener("pageshow", function(e) {
+  if (e.persisted || !localStorage.getItem("auth_token")) {
+    checkAuth();
+  }
+});
 
 // Show user name
 var authUser = JSON.parse(localStorage.getItem("auth_user") || '{}');
@@ -894,9 +744,11 @@ function handleAuthError(res) {
 
 // ── Logout ────────────────────────────────────────────
 document.getElementById("btn-logout").addEventListener("click", function() {
-  localStorage.removeItem("auth_token");
-  localStorage.removeItem("auth_user");
-  window.location.href = "auth.html";
+  if (window.confirm("Are you sure you want to logout?")) {
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
+    window.location.href = "auth.html";
+  }
 });
 
 // ── State ──────────────────────────────────────────────
@@ -908,6 +760,9 @@ var searchQuery = "";
 var editingId = null;
 var activeMonth = ""; // e.g. "2026-07"
 var chartInstance = null;
+var monthlyBudget = 0; // Stores the user's fixed monthly budget
+
+
 
 // Category colors
 var CATEGORY_COLORS = {
@@ -955,7 +810,9 @@ function formatAmount(amount) {
 function showToast(msg) {
   toastEl.querySelector(".toast-msg").textContent = msg;
   toastEl.classList.add("show");
-  setTimeout(function() { toastEl.classList.remove("show"); }, 2500);
+  // Clear any existing timeout so they don't overlap
+  if (toastEl.hideTimeout) clearTimeout(toastEl.hideTimeout);
+  toastEl.hideTimeout = setTimeout(function() { toastEl.classList.remove("show"); }, 2000);
 }
 
 // Escape HTML to prevent XSS
@@ -1053,6 +910,7 @@ function populateMonthSelector() {
 
 // ── Dashboard rendering ──────────────────────────────
 function renderDashboard() {
+    updateBudgetUI(); 
   // Calculate category totals from monthExpenses
   var catTotals = {};
   var grandTotal = 0;
@@ -1073,7 +931,9 @@ function renderDashboard() {
 
   if (entries.length === 0) {
     dashboardContent.innerHTML =
-      '<div class="dashboard-empty"><div class="emoji">📊</div><p>No expenses this month</p></div>';
+      '<div class="dashboard-empty">' +
+      '<div style="font-size: 3rem; margin-bottom: 8px;">📊</div>' +
+      '<p>No expenses this month</p></div>';
     if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
     return;
   }
@@ -1183,23 +1043,10 @@ function render() {
 
   // Empty state
   if (expenses.length === 0) {
-    var emptyMsg, subtext;
-    if (searchQuery) {
-      emptyMsg = 'No expenses matching "' + escapeHtml(searchQuery) + '"';
-      subtext = 'Try a different search term';
-    } else if (activeCategory !== "All") {
-      emptyMsg = 'No ' + activeCategory.toLowerCase() + ' expenses found.';
-      subtext = 'Try a different category';
-    } else {
-      emptyMsg = 'No expenses recorded yet.';
-      subtext = 'Go back to add your first expense!';
-    }
-    listEl.innerHTML =
+    listEl.innerHTML = 
       '<div class="empty-state">' +
-      '<div class="emoji">🔍</div>' +
-      '<p>' + emptyMsg + '</p>' +
-      '<p class="subtext">' + subtext + '</p>' +
-      '</div>';
+      '<div style="font-size: 3rem; margin-bottom: 8px;">🔍</div>' +
+      '<p>No expenses found</p></div>';
     return;
   }
 
@@ -1246,6 +1093,139 @@ function loadExpenses() {
       console.error("Failed to load expenses:", err);
     });
 }
+// Fetch budget from the backend
+function fetchBudget() {
+  return fetch("http://localhost:3000/budget", { headers: authHeaders() })
+    .then(function(res) {
+      if (handleAuthError(res)) return;
+      return res.json();
+    })
+    .then(function(data) {
+      if (data) {
+        monthlyBudget = Number(data.monthly_budget) || 0;
+        updateBudgetUI();
+      }
+    })
+    .catch(function(err) {
+      console.error("Error fetching budget:", err);
+    });
+}
+
+// Update budget on the backend
+function saveBudgetOnServer(amount) {
+  return fetch("http://localhost:3000/budget", {
+    method: "PUT",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ amount: Number(amount) })
+  })
+    .then(function(res) {
+      if (handleAuthError(res)) return;
+      if (!res.ok) {
+        return res.json().then(function(err) { throw new Error(err.error); });
+      }
+      return res.json();
+    })
+    .then(function(data) {
+      if (data) {
+        monthlyBudget = Number(data.monthly_budget) || 0;
+        updateBudgetUI();
+        showToast("Budget updated successfully!");
+      }
+    })
+    .catch(function(err) {
+      showToast(err.message || "Failed to update budget.");
+    });
+}
+// Keep track of dismissed alerts so they don't pop up again in the same session
+var dismissedAlerts = { warning: false, danger: false };
+
+// Update the entire Budget UI based on current month's spending
+function updateBudgetUI() {
+  var budgetSetup = document.getElementById("budget-setup");
+  var budgetDisplay = document.getElementById("budget-display");
+  var spentText = document.getElementById("budget-spent-text");
+  var totalText = document.getElementById("budget-total-text");
+  var progressFill = document.getElementById("budget-progress-fill");
+  var statusMsg = document.getElementById("budget-status-msg");
+  var budgetInput = document.getElementById("budget-input");
+
+  // Calculate current month's total spending
+  var spent = 0;
+  for (var i = 0; i < monthExpenses.length; i++) {
+    spent += monthExpenses[i].amount;
+  }
+
+  budgetInput.value = monthlyBudget > 0 ? monthlyBudget : "";
+
+  if (monthlyBudget === 0) {
+    // Show setup form if no budget is set
+    budgetSetup.classList.remove("hidden");
+    budgetDisplay.classList.add("hidden");
+    statusMsg.textContent = "";
+    clearPersistentAlert();
+  } else {
+    // Show progress bar
+    budgetSetup.classList.add("hidden");
+    budgetDisplay.classList.remove("hidden");
+
+    spentText.textContent = formatAmount(spent);
+    totalText.textContent = "of " + formatAmount(monthlyBudget) + " spent";
+
+    var pct = Math.min((spent / monthlyBudget) * 100, 100);
+    progressFill.style.width = pct + "%";
+
+    // Reset styles
+    progressFill.className = "budget-progress-fill";
+    statusMsg.className = "budget-status-msg";
+
+    if (spent >= monthlyBudget) {
+      progressFill.classList.add("danger");
+      statusMsg.classList.add("danger");
+      var exceeded = spent - monthlyBudget;
+      statusMsg.textContent = "⚠️ Exceeded by " + formatAmount(exceeded);
+      
+      if (!dismissedAlerts.danger) {
+        showPersistentAlert("danger", "🚨 Exceeded: You are over your monthly budget by " + formatAmount(exceeded) + "!");
+      }
+    } else if (spent >= monthlyBudget * 0.8) {
+      progressFill.classList.add("warning");
+      statusMsg.classList.add("warning");
+      statusMsg.textContent = "⚠️ Warning: " + Math.round(pct) + "% of budget used";
+      
+      if (!dismissedAlerts.warning) {
+        showPersistentAlert("warning", "⚠️ Warning: You've used " + Math.round(pct) + "% of your monthly budget!");
+      }
+    } else {
+      statusMsg.textContent = formatAmount(monthlyBudget - spent) + " remaining";
+      // Clear alert and reset dismiss states if user edits and reduces their spending
+      clearPersistentAlert();
+      dismissedAlerts = { warning: false, danger: false };
+    }
+  }
+}
+
+// Display the persistent alert
+function showPersistentAlert(type, message) {
+  var alertBox = document.getElementById("persistent-alert");
+  var alertMsg = document.getElementById("persistent-alert-msg");
+  var alertIcon = document.getElementById("persistent-alert-icon");
+
+  alertBox.className = "persistent-alert " + type;
+  alertMsg.textContent = message;
+  alertIcon.textContent = type === "danger" ? "🚨" : "⚠️";
+  alertBox.classList.remove("hidden");
+  
+  // Auto-dismiss after 5 seconds to prevent it staying too long
+  if (alertBox.hideTimeout) clearTimeout(alertBox.hideTimeout);
+  alertBox.hideTimeout = setTimeout(function() { clearPersistentAlert(); }, 5000);
+}
+
+// Clear the persistent alert
+function clearPersistentAlert() {
+  document.getElementById("persistent-alert").classList.add("hidden");
+}
+
+
 
 // ── Search input ──────────────────────────────────────
 searchInput.addEventListener("input", function() {
@@ -1361,9 +1341,53 @@ editForm.addEventListener("submit", function(e) {
     })
     .catch(function(err) { console.error("Failed to update:", err); });
 });
+// ── Budget event listeners ────────────────────────────
+
+// Show budget input form when "Edit" is clicked
+document.getElementById("btn-edit-budget").addEventListener("click", function() {
+  var setup = document.getElementById("budget-setup");
+  var input = document.getElementById("budget-input");
+  setup.classList.toggle("hidden");
+  if (!setup.classList.contains("hidden")) {
+    input.focus();
+    input.select();
+  }
+});
+
+// Save budget when "Save" is clicked
+document.getElementById("btn-save-budget").addEventListener("click", function() {
+  var input = document.getElementById("budget-input");
+  var amount = parseFloat(input.value);
+  if (isNaN(amount) || amount < 0) {
+    showToast("Please enter a valid positive number.");
+    return;
+  }
+  
+  // Save to database
+  saveBudgetOnServer(amount);
+});
+
+// Close persistent warning/danger alerts
+document.getElementById("btn-close-alert").addEventListener("click", function() {
+  clearPersistentAlert();
+  
+  // Mark as dismissed for the session based on current alert status
+  var spent = 0;
+  for (var i = 0; i < monthExpenses.length; i++) {
+    spent += monthExpenses[i].amount;
+  }
+  
+  if (spent >= monthlyBudget) {
+    dismissedAlerts.danger = true;
+  } else if (spent >= monthlyBudget * 0.8) {
+    dismissedAlerts.warning = true;
+  }
+});
+
 
 // ── Init ──────────────────────────────────────────────
 loadExpenses();
+fetchBudget();
   </script>
 </body>
 

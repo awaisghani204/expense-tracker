@@ -9,12 +9,22 @@ db.pragma("journal_mode = WAL");
 // ── Create the users table ────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
-    id       INTEGER PRIMARY KEY AUTOINCREMENT,
-    name     TEXT    NOT NULL,
-    email    TEXT    NOT NULL UNIQUE,
-    password TEXT    NOT NULL
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    name           TEXT    NOT NULL,
+    email          TEXT    NOT NULL UNIQUE,
+    password       TEXT    NOT NULL,
+    monthly_budget REAL    DEFAULT 0
   )
 `);
+
+// Check if users table already has the monthly_budget column
+const userTableInfo = db.prepare("PRAGMA table_info(users)").all();
+const hasMonthlyBudget = userTableInfo.some(col => col.name === "monthly_budget");
+
+if (!hasMonthlyBudget) {
+  db.exec(`ALTER TABLE users ADD COLUMN monthly_budget REAL DEFAULT 0`);
+  console.log("Migrated users table — added monthly_budget column ✅");
+}
 
 // ── Create the expenses table (with user_id) ──────────
 // Check if expenses table already exists
